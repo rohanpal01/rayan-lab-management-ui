@@ -4,10 +4,11 @@ import axios from "axios";
 function TestCatalog() {
   const [tests, setTests] = useState([]);
   const [testName, setTestName] = useState("");
-  const [description, setDescription] = useState("");
-  const [sampleType, setSampleType] = useState("");
-  const [schedule, setSchedule] = useState("");
+  const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
+  const [parameters, setParameters] = useState([
+  { paramName: "", unit: "", refMin: "", refMax: "", method: "" }
+]);
 
   useEffect(() => {
     axios.get("http://localhost:8080/tests").then(res => setTests(res.data));
@@ -17,10 +18,9 @@ function TestCatalog() {
     try {
       await axios.post("http://localhost:8080/tests", {
         testName,
-        description,
-        sampleType,
-        schedule,
-        price: parseFloat(price) // Convert to number for backend
+        category,
+        price: parseFloat(price),
+        parameters // Convert to number for backend
       });
       alert("Test added!");
       // Refresh the tests list
@@ -28,14 +28,30 @@ function TestCatalog() {
       setTests(res.data);
       // Clear form
       setTestName("");
-      setDescription("");
-      setSampleType("");
-      setSchedule("");
+      setCategory("");
       setPrice("");
     } catch (error) {
       alert("Failed to add test: " + error.message);
     }
   };
+
+  const handleParamChange = (index, field, value) => {
+  const updated = [...parameters];
+  updated[index][field] = value;
+  setParameters(updated);
+};
+
+const addParameter = () => {
+  setParameters([
+    ...parameters,
+    { paramName: "", unit: "", refMin: "", refMax: "", method: "" }
+  ]);
+};
+
+const removeParam = (index) => {
+  const updated = parameters.filter((_, i) => i !== index);
+  setParameters(updated);
+};
 
   const styles = {
     container: {
@@ -140,24 +156,49 @@ function TestCatalog() {
           <input placeholder="Test Name" value={testName} onChange={e => setTestName(e.target.value)} style={styles.input} />
         </div>
         <div style={styles.formGroup}>
-          <label style={styles.label}>📝 Description</label>
-          <input placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} style={styles.input} />
-        </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>🧬 Sample Type</label>
-          <input placeholder="Sample Type" value={sampleType} onChange={e => setSampleType(e.target.value)} style={styles.input} />
-        </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>📅 Schedule</label>
-          <input placeholder="Schedule" value={schedule} onChange={e => setSchedule(e.target.value)} style={styles.input} />
+          <label style={styles.label}>🧬 Category</label>
+          <input placeholder="Category" value={category} onChange={e => setCategory(e.target.value)} style={styles.input} />
         </div>
         <div style={styles.formGroup}>
           <label style={styles.label}>💰 Price (₹)</label>
           <input placeholder="Price" value={price} onChange={e => setPrice(e.target.value)} style={styles.input} />
         </div>
+        <h3 style={{ marginTop: '20px' }}>Parameters</h3>
+
+  {parameters.map((p, index) => (
+    <div key={index} style={{ marginBottom: '10px' }}>
+      <input placeholder="Param Name"
+        value={p.paramName}
+        onChange={e => handleParamChange(index, "paramName", e.target.value)} />
+
+      <input placeholder="Unit"
+        value={p.unit}
+        onChange={e => handleParamChange(index, "unit", e.target.value)} />
+
+      <input placeholder="Ref Min"
+        value={p.refMin}
+        onChange={e => handleParamChange(index, "refMin", e.target.value)} />
+
+      <input placeholder="Ref Max"
+        value={p.refMax}
+        onChange={e => handleParamChange(index, "refMax", e.target.value)} />
+
+      <input placeholder="Method"
+        value={p.method}
+        onChange={e => handleParamChange(index, "method", e.target.value)} />
+
+        {/* ✅ REMOVE BUTTON MUST BE HERE */}
+    <button type="button" onClick={() => removeParam(index)}>
+      ❌
+    </button>
+    </div>
+  ))}
+
+  <button type="button" onClick={addParameter}>
+    + Add Parameter
+  </button>
         <button onClick={addTest} style={styles.button} onMouseOver={(e) => e.target.style.backgroundColor = '#2980b9'} onMouseOut={(e) => e.target.style.backgroundColor = '#3498db'}>+ Add Test</button>
       </div>
-
       <div style={{ marginTop: '40px', textAlign: 'center' }}>
         <h2 style={{ color: '#2c3e50' }}>Available Tests</h2>
       </div>
@@ -165,8 +206,7 @@ function TestCatalog() {
         {tests.map(t => (
           <div key={t.id} style={styles.testCard}>
             <div style={styles.testName}>{t.testName}</div>
-            <div style={styles.testDetail}><strong>Sample:</strong> {t.sampleType}</div>
-            <div style={styles.testDetail}><strong>Schedule:</strong> {t.schedule}</div>
+            <div style={styles.testDetail}><strong>Category:</strong> {t.category}</div>
             <div style={styles.testDetail}><strong>Price:</strong> ₹{t.price}</div>
           </div>
         ))}

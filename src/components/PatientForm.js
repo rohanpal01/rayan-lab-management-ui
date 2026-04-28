@@ -10,24 +10,26 @@ function PatientForm() {
   const [examinedBy, setExaminedBy] = useState("");
 
   const createUniqueId = (patient) => {
-    const normalized = [
-      patient.name,
-      patient.age,
-      patient.gender,
-      patient.contact,
-      patient.address,
-      patient.examinedBy,
-    ]
-      .map((value) => (value || "").trim().toLowerCase())
-      .join("|");
+  let name = patient.name || "";
+  let mobile = patient.contact || "";
 
-    let hash = 5381;
-    for (let i = 0; i < normalized.length; i += 1) {
-      hash = (hash << 5) + hash + normalized.charCodeAt(i);
-    }
+  // Clean name (remove spaces, uppercase)
+  name = name.replace(/\s+/g, "").toUpperCase();
 
-    return `PAT-${Math.abs(hash).toString(36)}`;
-  };
+  // Take first 4 chars, pad if needed
+  let namePart = name.substring(0, 4);
+  if (namePart.length < 4) {
+    namePart = namePart.padEnd(4, "X");
+  }
+
+  // Take first 4 digits of mobile
+  let mobilePart = mobile.substring(0, 4);
+  if (mobilePart.length < 4) {
+    mobilePart = mobilePart.padEnd(4, "0");
+  }
+
+  return `PAT-${namePart}${mobilePart}-${Math.floor(Math.random() * 100)}`;
+};
 
   const handleSubmit = async () => {
     const patientData = {
@@ -41,7 +43,7 @@ function PatientForm() {
 
     await axios.post("http://localhost:8080/patients", {
       ...patientData,
-      uniqueId: createUniqueId(patientData),
+      uniquePatientId: createUniqueId(patientData),
     });
     alert("Patient registered!");
   };
