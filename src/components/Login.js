@@ -6,9 +6,13 @@ import { useNavigate } from "react-router-dom";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+ 
     try {
       const res = await axios.post(`${API_BASE_URL}/auth/login`, {
         username,
@@ -19,15 +23,44 @@ function Login() {
       // Redirect based on role
       if (res.data.role === "ROLE_ADMIN") {
         navigate("/admin-dashboard");
-      } else if (res.data.role === "TECHNICIAN") {
+      } else if (res.data.role === "ROLE_TECHNICIAN") {
         navigate("/technician-dashboard");
       } else {
         navigate("/reception-dashboard");
       }
     } catch (err) {
-      alert("Login failed!");
+      
+      if (err.response && err.response.data) {
+      alert(err.response.data);
+    } else {
+        alert("Login failed!");
+      }
+
+      console.error(err);
     }
   };
+
+  const handleRegister = async () => {
+     if (!role) {
+    alert("Please select role");
+    return;
+  }
+  try {
+    const res = await axios.post(`${API_BASE_URL}/auth/register`, {
+      username,
+      password,
+      role // 👈 NEW
+    });
+
+    alert(res.data);
+
+     // ✅ Switch back to login after registration
+    setIsRegisterMode(false);
+
+  } catch (err) {
+    alert(err.response?.data || "Registration failed");
+  }
+};
 
   const styles = {
     container: {
@@ -97,6 +130,7 @@ function Login() {
           <h1 style={styles.title}>🏥 RAYAN DIAGNOSTIC LAB</h1>
           <p style={styles.subtitle}>Lab Management System</p>
         </div>
+      
         
         <div style={styles.formGroup}>
           <input
@@ -121,15 +155,35 @@ function Login() {
             onBlur={(e) => e.target.style.borderColor = '#ecf0f1'}
           />
         </div>
-        
-        <button 
-          onClick={handleLogin}
-          style={styles.button}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#2980b9'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#3498db'}
+
+        <div style={styles.formGroup}>
+          {isRegisterMode && (
+         <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          style={styles.input}
         >
-          Login / Register
-        </button>
+        <option value="">Select Role</option>
+        <option value="ADMIN">Admin</option>
+        <option value="TECHNICIAN">Technician</option>
+        <option value="RECEPTION">Reception</option>
+       </select>
+          )}
+       </div>
+        
+       <button onClick={isRegisterMode ? handleRegister : handleLogin}
+       style={styles.button}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#2980b9'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#3498db'}>
+         {isRegisterMode ? "Register" : "Login"}
+       </button>
+       {/* Toggle button */}
+<button
+  onClick={() => setIsRegisterMode(!isRegisterMode)}
+  style={{ marginTop: "10px", background: "none", border: "none", color: "blue", cursor: "pointer" }}
+>
+  {isRegisterMode ? "Already have an account? Login" : "New user? Register"}
+</button>
       </div>
     </div>
   );
