@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
@@ -20,10 +21,10 @@ function Dashboard() {
   const [quality, setQuality] = useState(0);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/analytics/tests/daily").then(res => setDailyTests(res.data));
-    axios.get("http://localhost:8080/analytics/tests/weekly").then(res => setWeeklyTests(res.data));
-    axios.get("http://localhost:8080/analytics/revenue").then(res => setRevenue(res.data));
-    axios.get("http://localhost:8080/analytics/quality").then(res => setQuality(res.data));
+    axios.get(`${API_BASE_URL}/analytics/tests/daily`).then(res => setDailyTests(res.data));
+    axios.get(`${API_BASE_URL}/analytics/tests/weekly`).then(res => setWeeklyTests(res.data));
+    axios.get(`${API_BASE_URL}/analytics/revenue`).then(res => setRevenue(res.data));
+    axios.get(`${API_BASE_URL}/analytics/quality`).then(res => setQuality(res.data));
   }, []);
 
   const data = {

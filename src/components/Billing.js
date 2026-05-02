@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -8,11 +9,11 @@ function Billing() {
   const [amount, setAmount] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:8080/billing/invoices").then(res => setInvoices(res.data));
+    axios.get(`${API_BASE_URL}/billing/invoices`).then(res => setInvoices(res.data));
   }, []);
 
   const createInvoice = async () => {
-    await axios.post("http://localhost:8080/billing/invoice", {
+    await axios.post(`${API_BASE_URL}/billing/invoice`, {
       patientId,
       testId,
       amount
@@ -21,7 +22,7 @@ function Billing() {
   };
 
   const markPaid = async (id) => {
-    await axios.put(`http://localhost:8080/billing/invoice/${id}/pay`);
+    await axios.put(`${API_BASE_URL}/billing/invoice/${id}/pay`);
     alert("Invoice marked as paid!");
   };
 

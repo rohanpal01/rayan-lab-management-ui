@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -11,12 +12,12 @@ function TestCatalog() {
 ]);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/tests").then(res => setTests(res.data));
+    axios.get(`${API_BASE_URL}/tests`).then(res => setTests(res.data));
   }, []);
 
   const addTest = async () => {
     try {
-      await axios.post("http://localhost:8080/tests", {
+      await axios.post(`${API_BASE_URL}/tests`, {
         testName,
         category,
         price: parseFloat(price),
@@ -24,7 +25,7 @@ function TestCatalog() {
       });
       alert("Test added!");
       // Refresh the tests list
-      const res = await axios.get("http://localhost:8080/tests");
+      const res = await axios.get(`${API_BASE_URL}/tests`);
       setTests(res.data);
       // Clear form
       setTestName("");

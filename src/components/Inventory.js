@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -9,11 +10,11 @@ function Inventory() {
   const [threshold, setThreshold] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:8080/inventory").then(res => setItems(res.data));
+    axios.get(`${API_BASE_URL}/inventory`).then(res => setItems(res.data));
   }, []);
 
   const addItem = async () => {
-    await axios.post("http://localhost:8080/inventory", {
+    await axios.post(`${API_BASE_URL}/inventory`, {
       itemName,
       category,
       quantity,
@@ -23,7 +24,7 @@ function Inventory() {
   };
 
   const checkLowStock = async () => {
-    const res = await axios.get("http://localhost:8080/inventory/low-stock");
+    const res = await axios.get(`${API_BASE_URL}/inventory/low-stock`);
     alert("Low stock items: " + res.data.map(i => i.itemName).join(", "));
   };
 

@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config/api";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -11,7 +12,7 @@ function ResultView() {
 
   // ================= FETCH DATA =================
   useEffect(() => {
-    axios.get("http://localhost:8080/results/view")
+    axios.get(`${API_BASE_URL}/results/view`)
       .then(res => {
         // ✅ Latest first
         const sorted = res.data.sort(
@@ -24,7 +25,7 @@ function ResultView() {
 
   // ================= VERIFY =================
   const verifyResult = async (id) => {
-    await axios.put(`http://localhost:8080/results/${id}/verify`);
+    await axios.put(`${API_BASE_URL}/results/${id}/verify`);
     alert("Result verified!");
   };
 
@@ -32,7 +33,7 @@ function ResultView() {
   const downloadPDF = async (id, prePrinted = false) => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/results/${id}/report?prePrinted=${prePrinted}`,
+        `${API_BASE_URL}/results/${id}/report?prePrinted=${prePrinted}`,
         { responseType: "blob" }
       );
 

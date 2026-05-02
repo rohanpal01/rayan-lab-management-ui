@@ -1,3 +1,4 @@
+import API_BASE_URL from "../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -8,11 +9,11 @@ function SampleTracking() {
   const [sampleType, setSampleType] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:8080/samples").then(res => setSamples(res.data));
+    axios.get(`${API_BASE_URL}/samples`).then(res => setSamples(res.data));
   }, []);
 
   const addSample = async () => {
-    await axios.post("http://localhost:8080/samples", {
+    await axios.post(`${API_BASE_URL}/samples`, {
       patientId,
       testId,
       sampleType
@@ -21,7 +22,7 @@ function SampleTracking() {
   };
 
   const updateStatus = async (id, status) => {
-    await axios.put(`http://localhost:8080/samples/${id}/status`, { status });
+    await axios.put(`${API_BASE_URL}/samples/${id}/status`, { status });
     alert("Status updated!");
   };
 

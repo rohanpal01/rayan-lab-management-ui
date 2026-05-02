@@ -1,11 +1,11 @@
+import API_BASE_URL from "../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function ResultEntry() {
 
-  const [patients, setPatients] = useState([]);
+   const [patients, setPatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState("");
-
   const [tests, setTests] = useState([]);
   const [selectedTests, setSelectedTests] = useState([]);
   const [values, setValues] = useState({});
@@ -13,27 +13,29 @@ function ResultEntry() {
 
   // ================= LOAD PATIENTS =================
   useEffect(() => {
-    axios.get("http://localhost:8080/patients")
+    axios.get(`${API_BASE_URL}/patients`)
       .then(res => setPatients(res.data))
       .catch(err => console.error(err));
   }, []);
 
   // ================= LOAD TESTS =================
   useEffect(() => {
-    axios.get("http://localhost:8080/tests")
+    axios.get(`${API_BASE_URL}/tests`)
       .then(res => setTests(res.data))
       .catch(err => console.error(err));
   }, []);
 
-  // ================= ADD TEST =================
+  // Add test
   const addTest = (testId) => {
     const test = tests.find(t => t.id == testId);
     if (!test) return;
 
+    // prevent duplicate
     if (selectedTests.find(t => t.id === test.id)) return;
 
     setSelectedTests([...selectedTests, test]);
 
+    // initialize parameter values
     const newValues = {};
     test.parameters.forEach(p => {
       newValues[p.paramId] = "";
@@ -42,12 +44,12 @@ function ResultEntry() {
     setValues(prev => ({ ...prev, ...newValues }));
   };
 
-  // ================= REMOVE TEST =================
+  // Remove test
   const removeTest = (testId) => {
     setSelectedTests(selectedTests.filter(t => t.id !== testId));
   };
 
-  // ================= HANDLE VALUE =================
+  // Handle value change
   const handleValueChange = (paramId, value) => {
     setValues({
       ...values,
@@ -55,7 +57,7 @@ function ResultEntry() {
     });
   };
 
-  // ================= SUBMIT =================
+  // Submit
   const submitResult = async () => {
     if (!selectedPatientId) {
       alert("❌ Please select patient");
@@ -63,6 +65,7 @@ function ResultEntry() {
     }
 
     try {
+
       const payload = {
         patientId: selectedPatientId,   // ✅ FIXED
         remark,
@@ -75,11 +78,11 @@ function ResultEntry() {
         }))
       };
 
-      await axios.post("http://localhost:8080/results/entry", payload);
+      await axios.post(`${API_BASE_URL}/results/entry`, payload);
 
       alert("✅ Result Saved!");
 
-      // RESET
+      // Reset
       setSelectedPatientId("");
       setSelectedTests([]);
       setValues({});
@@ -91,30 +94,57 @@ function ResultEntry() {
     }
   };
 
-  // ================= UI =================
+  // Styles
   const styles = {
-    container: { padding: "30px", background: "#f5f5f5", minHeight: "100vh" },
-    form: {
-      background: "white",
-      padding: "30px",
-      maxWidth: "800px",
-      margin: "auto",
-      borderRadius: "8px"
+    container: {
+      padding: '30px',
+      backgroundColor: '#f5f5f5',
+      minHeight: '100vh',
+      fontFamily: 'Arial'
     },
-    input: { width: "100%", padding: "10px", marginBottom: "15px" },
-    label: { fontWeight: "bold" },
-    button: {
-      padding: "12px",
-      width: "100%",
-      background: "#27ae60",
-      color: "white",
-      border: "none",
-      borderRadius: "5px"
+    form: {
+      backgroundColor: 'white',
+      padding: '30px',
+      maxWidth: '800px',
+      margin: '0 auto',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    },
+    input: {
+      width: '100%',
+      padding: '10px',
+      marginBottom: '15px'
+    },
+    label: {
+      fontWeight: 'bold'
     },
     testBox: {
-      border: "1px solid #ccc",
-      padding: "15px",
-      marginBottom: "15px"
+      border: '1px solid #ccc',
+      padding: '15px',
+      marginBottom: '15px',
+      borderRadius: '6px',
+      backgroundColor: '#fafafa'
+    },
+    paramBox: {
+      marginBottom: '10px'
+    },
+    button: {
+      marginTop: '20px',
+      padding: '12px',
+      width: '100%',
+      backgroundColor: '#27ae60',
+      color: 'white',
+      border: 'none',
+      borderRadius: '5px',
+      fontSize: '16px'
+    },
+    removeBtn: {
+      backgroundColor: 'red',
+      color: 'white',
+      border: 'none',
+      padding: '5px 10px',
+      cursor: 'pointer',
+      marginBottom: '10px'
     }
   };
 
@@ -125,10 +155,10 @@ function ResultEntry() {
 
       <div style={styles.form}>
 
-        {/* ================= PATIENT SELECT ================= */}
-        <label style={styles.label}>Select Patient</label>
-        <select
-          style={styles.input}
+        {/* Patient */}
+        <label style={styles.label}>Patient Name</label>
+       <select
+       style={styles.input}
           value={selectedPatientId}
           onChange={(e) => setSelectedPatientId(e.target.value)}
         >
@@ -140,7 +170,7 @@ function ResultEntry() {
           ))}
         </select>
 
-        {/* ================= ADD TEST ================= */}
+        {/* Add Test */}
         <label style={styles.label}>Add Test</label>
         <select
           style={styles.input}
@@ -154,36 +184,53 @@ function ResultEntry() {
           ))}
         </select>
 
-        {/* ================= TESTS ================= */}
+        {/* Selected Tests */}
         {selectedTests.map(test => (
           <div key={test.id} style={styles.testBox}>
 
-            <h3>{test.testName}</h3>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <h3>{test.testName}</h3>
+              <button
+                style={styles.removeBtn}
+                onClick={() => removeTest(test.id)}
+              >
+                Remove
+              </button>
+            </div>
 
+            {/* Parameters */}
             {test.parameters.map(p => (
-              <div key={p.paramId}>
-                <label>{p.paramName} ({p.unit})</label>
+              <div key={p.paramId} style={styles.paramBox}>
+
+                <label>
+                  {p.paramName} ({p.unit})
+                </label>
 
                 <input
                   style={styles.input}
                   value={values[p.paramId] || ""}
-                  onChange={(e) =>
-                    handleValueChange(p.paramId, e.target.value)
-                  }
+                  onChange={(e) => handleValueChange(p.paramId, e.target.value)}
                 />
+
+                <small style={{ color: "gray" }}>
+                  Ref: {p.refMin} - {p.refMax}
+                </small>
+
               </div>
             ))}
+
           </div>
         ))}
 
-        {/* ================= REMARK ================= */}
         <label style={styles.label}>Remark</label>
         <input
-          style={styles.input}
-          value={remark}
-          onChange={(e) => setRemark(e.target.value)}
+        style={styles.input}
+        placeholder="Enter remark"
+        value={remark}
+        onChange={(e) => setRemark(e.target.value)}
         />
 
+        {/* Submit */}
         <button onClick={submitResult} style={styles.button}>
           Save Result
         </button>
